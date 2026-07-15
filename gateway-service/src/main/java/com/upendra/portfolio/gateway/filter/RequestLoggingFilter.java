@@ -1,40 +1,37 @@
 package com.upendra.portfolio.gateway.filter;
 
-import java.io.IOException;
-
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ServerWebExchange;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
+import reactor.core.publisher.Mono;
 @Component
-public class RequestLoggingFilter extends OncePerRequestFilter{
+public class RequestLoggingFilter implements GlobalFilter, Ordered {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+    public Mono<Void> filter(ServerWebExchange exchange,
+                             GatewayFilterChain chain) {
 
         long start = System.currentTimeMillis();
 
-        filterChain.doFilter(request, response);
+        return chain.filter(exchange)
+                .then(Mono.fromRunnable(() -> {
 
-        long end = System.currentTimeMillis();
+                    long end = System.currentTimeMillis();
 
-        System.out.println(
-                request.getMethod() +
-                " " +
-                request.getRequestURI() +
-                " -> " +
-                response.getStatus() +
-                " (" +
-                (end - start) +
-                " ms)"
-        );
+                    System.out.println(
+                            exchange.getRequest().getMethod() + " " +
+                            exchange.getRequest().getURI().getPath() + " -> " +
+                            exchange.getResponse().getStatusCode() + " (" +
+                            (end - start) + " ms)"
+                    );
+                }));
     }
 
+    @Override
+    public int getOrder() {
+        return 0;
+    }
 }

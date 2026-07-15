@@ -9,15 +9,10 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UserResponse {
+public class LoginResponse {
+	
+	private UserResponse user;
 
-	private UUID uuid;
+   
 
-    private String firstName;
-
-    private String lastName;
-
-    private String email;
-    
-    private Role role;
 }

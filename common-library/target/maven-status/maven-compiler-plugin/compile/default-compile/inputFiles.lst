@@ -5,4 +5,5 @@ D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfol
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\BusinessException.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\DuplicateResourceException.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\ResourceNotFoundException.java
+D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\UnauthorizedException.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\util\ValidationUtil.java
