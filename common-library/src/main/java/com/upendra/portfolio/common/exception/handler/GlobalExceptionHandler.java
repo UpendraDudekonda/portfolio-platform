@@ -1,4 +1,4 @@
-package com.upendra.portfolio.auth.exception;
+package com.upendra.portfolio.common.exception.handler;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.upendra.portfolio.common.dto.ErrorResponse;
+import com.upendra.portfolio.common.exception.BadRequestException;
 import com.upendra.portfolio.common.exception.BusinessException;
 import com.upendra.portfolio.common.exception.DuplicateResourceException;
 import com.upendra.portfolio.common.exception.ResourceNotFoundException;
@@ -70,6 +71,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request));
     }
+    
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(
+            BadRequestException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationException(
@@ -97,3 +114,4 @@ public class GlobalExceptionHandler {
     }
 
 }
+
