@@ -4,13 +4,20 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.common.exception.BadRequestException;
 import com.upendra.portfolio.common.exception.ResourceNotFoundException;
+import com.upendra.portfolio.port.client.MediaClient;
+import com.upendra.portfolio.port.dto.media.UploadResponse;
 import com.upendra.portfolio.port.dto.request.CreateProjectRequest;
 import com.upendra.portfolio.port.dto.request.UpdateProjectRequest;
+import com.upendra.portfolio.port.dto.response.ProjectImageResponse;
 import com.upendra.portfolio.port.dto.response.ProjectResponse;
 import com.upendra.portfolio.port.entity.Project;
+import com.upendra.portfolio.port.entity.ProjectImage;
+import com.upendra.portfolio.port.repository.ProjectImageRepository;
 import com.upendra.portfolio.port.repository.ProjectRepository;
 import com.upendra.portfolio.port.service.ProjectService;
 
@@ -23,6 +30,9 @@ import lombok.RequiredArgsConstructor;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final MediaClient mediaClient;
+    
+    private final ProjectImageRepository projectImageRepository;
 
     @Override
     public ProjectResponse createProject(UUID userUuid,
@@ -44,7 +54,6 @@ public class ProjectServiceImpl implements ProjectService {
                 .technologies(request.getTechnologies())
                 .githubUrl(request.getGithubUrl())
                 .liveUrl(request.getLiveUrl())
-                .imageUrl(request.getImageUrl())
                 .featured(request.getFeatured())
                 .displayOrder(request.getDisplayOrder())
                 .build();
@@ -90,8 +99,6 @@ public class ProjectServiceImpl implements ProjectService {
         if (request.getLiveUrl() != null)
             project.setLiveUrl(request.getLiveUrl());
 
-        if (request.getImageUrl() != null)
-            project.setImageUrl(request.getImageUrl());
 
         if (request.getFeatured() != null)
             project.setFeatured(request.getFeatured());
@@ -111,10 +118,35 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Project not found."));
 
+        List<ProjectImage> images =
+                projectImageRepository
+                        .findByProjectIdOrderByDisplayOrderAsc(projectId);
+
+        for (ProjectImage image : images) {
+
+            mediaClient.deleteMedia(
+                    image.getImagePublicId(),
+                    "image");
+        }
+
+        projectImageRepository.deleteByProjectId(projectId);
+
         projectRepository.delete(project);
     }
 
     private ProjectResponse mapToResponse(Project project) {
+    	
+    	List<ProjectImageResponse> images =
+    	        projectImageRepository
+    	                .findByProjectIdOrderByDisplayOrderAsc(project.getId())
+    	                .stream()
+    	                .map(image -> ProjectImageResponse.builder()
+    	                        .id(image.getId())
+    	                        .imageUrl(image.getImageUrl())
+    	                        .displayOrder(image.getDisplayOrder())
+    	                        .createdAt(image.getCreatedAt())
+    	                        .build())
+    	                .toList();
 
         return ProjectResponse.builder()
                 .id(project.getId())
@@ -124,11 +156,84 @@ public class ProjectServiceImpl implements ProjectService {
                 .technologies(project.getTechnologies())
                 .githubUrl(project.getGithubUrl())
                 .liveUrl(project.getLiveUrl())
-                .imageUrl(project.getImageUrl())
+                .images(images)
                 .featured(project.getFeatured())
                 .displayOrder(project.getDisplayOrder())
                 .createdAt(project.getCreatedAt())
                 .updatedAt(project.getUpdatedAt())
                 .build();
     }
+
+    @Override
+    public ProjectResponse uploadProjectImage(UUID userUuid,
+                                              Long projectId,
+                                              MultipartFile file) {
+
+        Project project = projectRepository
+                .findByIdAndUserUuid(projectId, userUuid)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Project not found."));
+
+        ApiResponse<UploadResponse> response =
+                mediaClient.uploadImage(file, "project");
+
+        UploadResponse upload = response.getData();
+
+        long count = projectImageRepository.countByProjectId(projectId);
+
+        ProjectImage projectImage = ProjectImage.builder()
+                .projectId(projectId)
+                .imageUrl(upload.getSecureUrl())
+                .imagePublicId(upload.getPublicId())
+                .displayOrder((int) count + 1)
+                .build();
+
+        projectImageRepository.save(projectImage);
+
+        return mapToResponse(project);
+    }
+
+    @Override
+    public List<ProjectImageResponse> getProjectImages(UUID userUuid,
+                                                       Long projectId) {
+
+        projectRepository.findByIdAndUserUuid(projectId, userUuid)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Project not found."));
+
+        return projectImageRepository
+                .findByProjectIdOrderByDisplayOrderAsc(projectId)
+                .stream()
+                .map(image -> ProjectImageResponse.builder()
+                        .id(image.getId())
+                        .imageUrl(image.getImageUrl())
+                        .displayOrder(image.getDisplayOrder())
+                        .createdAt(image.getCreatedAt())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public void deleteProjectImage(UUID userUuid,
+                                   Long projectId,
+                                   Long imageId) {
+
+        projectRepository.findByIdAndUserUuid(projectId, userUuid)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Project not found."));
+
+        ProjectImage image = projectImageRepository
+                .findByIdAndProjectId(imageId, projectId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Project image not found."));
+
+        mediaClient.deleteMedia(
+                image.getImagePublicId(),
+                "image");
+
+        projectImageRepository.delete(image);
+    }
+    
+    
+    
 }

@@ -25,7 +25,7 @@ public class CreateProjectRequest {
 
     private String liveUrl;
 
-    private String imageUrl;
+   // private String imageUrl;
 
     @NotNull
     private Boolean featured;

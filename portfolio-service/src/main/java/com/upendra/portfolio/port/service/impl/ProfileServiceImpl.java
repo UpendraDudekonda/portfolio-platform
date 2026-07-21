@@ -4,9 +4,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.common.exception.DuplicateResourceException;
 import com.upendra.portfolio.common.exception.ResourceNotFoundException;
+import com.upendra.portfolio.port.client.MediaClient;
+import com.upendra.portfolio.port.dto.media.UploadResponse;
 import com.upendra.portfolio.port.dto.request.CreateProfileRequest;
 import com.upendra.portfolio.port.dto.request.UpdateProfileRequest;
 import com.upendra.portfolio.port.dto.response.ProfileResponse;
@@ -14,18 +18,18 @@ import com.upendra.portfolio.port.entity.Profile;
 import com.upendra.portfolio.port.repository.ProfileRepository;
 import com.upendra.portfolio.port.service.ProfileService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService{
 
 	private final ProfileRepository profileRepository;
 	
+	private final MediaClient mediaClient;
 	
 	
 	
-	public ProfileServiceImpl(ProfileRepository profileRepository) {
-		super();
-		this.profileRepository = profileRepository;
-	}
 
 	@Override
 	public ProfileResponse createProfile(UUID userUuid, CreateProfileRequest request) {
@@ -41,8 +45,13 @@ public class ProfileServiceImpl implements ProfileService{
 		        .headline(request.getHeadline())
 		        .about(request.getAbout())
 		        .location(request.getLocation())
-		        .profileImageUrl(request.getProfileImageUrl())
-		        .resumeUrl(request.getResumeUrl())
+		        
+		        .profileImageUrl(null)
+		        .profileImagePublicId(null)
+
+		        .resumeUrl(null)
+		        .resumePublicId(null)
+		        
 		        .createdAt(LocalDateTime.now())
 		        .updatedAt(LocalDateTime.now())
 		        .build();
@@ -74,7 +83,9 @@ public class ProfileServiceImpl implements ProfileService{
 	            .about(profile.getAbout())
 	            .location(profile.getLocation())
 	            .profileImageUrl(profile.getProfileImageUrl())
+	         //   .profileImagePublicId(profile.getProfileImagePublicId())
 	            .resumeUrl(profile.getResumeUrl())
+	         //   .resumePublicId(profile.getResumePublicId())
 	            .createdAt(profile.getCreatedAt())
 	            .updatedAt(profile.getUpdatedAt())
 	            .build();
@@ -113,13 +124,7 @@ public class ProfileServiceImpl implements ProfileService{
 		    profile.setLocation(request.getLocation());
 		}
 
-		if (request.getProfileImageUrl() != null) {
-		    profile.setProfileImageUrl(request.getProfileImageUrl());
-		}
-
-		if (request.getResumeUrl() != null) {
-		    profile.setResumeUrl(request.getResumeUrl());
-		}
+		
 
 		profile.setUpdatedAt(LocalDateTime.now());
 
@@ -137,6 +142,79 @@ public class ProfileServiceImpl implements ProfileService{
 	                    new ResourceNotFoundException("Profile not found."));
 
 	    profileRepository.delete(profile);
+	}
+
+	
+	@Override
+	public ProfileResponse uploadProfileImage(UUID userUuid, MultipartFile file) {
+
+
+		Profile profile =
+			    profileRepository.findByUserUuid(userUuid)
+			        .orElseThrow(() ->
+			        	new ResourceNotFoundException("Profile not found.") );
+		
+		if (profile.getProfileImagePublicId() != null) {
+		    mediaClient.deleteMedia(
+		        profile.getProfileImagePublicId(),
+		        "image"
+		    );
+		}
+		
+		
+		//give media-service to upload and get uls and publicId
+		ApiResponse<UploadResponse> response =
+		        mediaClient.uploadImage(file, "profile");
+		
+		
+		UploadResponse upload = response.getData();
+		
+		//map to profile to save in db
+		profile.setProfileImageUrl(upload.getSecureUrl());
+
+		profile.setProfileImagePublicId(upload.getPublicId());
+
+		profile.setUpdatedAt(LocalDateTime.now());
+		
+		//save in DB
+		profileRepository.save(profile);
+		
+		return mapToResponse(profile);
+
+	}
+	
+	@Override
+	public ProfileResponse uploadResume(UUID userUuid,
+	                                    MultipartFile file) {
+
+	    Profile profile = profileRepository.findByUserUuid(userUuid)
+	            .orElseThrow(() ->
+	                    new ResourceNotFoundException("Profile not found."));
+
+	    // Delete old resume if present
+	    if (profile.getResumePublicId() != null) {
+
+	        mediaClient.deleteMedia(
+	                profile.getResumePublicId(),
+	                "raw"
+	        );
+	    }
+
+	    ApiResponse<UploadResponse> response =
+	            mediaClient.uploadFile(
+	                    file,
+	                    "resume"
+	            );
+
+	    UploadResponse upload = response.getData();
+
+	    profile.setResumeUrl(upload.getSecureUrl());
+	    profile.setResumePublicId(upload.getPublicId());
+	    profile.setUpdatedAt(LocalDateTime.now());
+
+	    Profile saved = profileRepository.save(profile);
+
+	    return mapToResponse(saved);
 	}
 
 }

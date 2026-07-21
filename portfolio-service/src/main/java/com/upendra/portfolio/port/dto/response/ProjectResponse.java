@@ -1,8 +1,13 @@
 package com.upendra.portfolio.port.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -25,7 +30,9 @@ public class ProjectResponse {
 
     private String liveUrl;
 
-    private String imageUrl;
+  //  private String imageUrl;
+    
+    private List<ProjectImageResponse> images;
 
     private Boolean featured;
 

@@ -21,7 +21,7 @@ public class UpdateProjectRequest {
 
     private String liveUrl;
 
-    private String imageUrl;
+  //  private String imageUrl;
 
     private Boolean featured;
 

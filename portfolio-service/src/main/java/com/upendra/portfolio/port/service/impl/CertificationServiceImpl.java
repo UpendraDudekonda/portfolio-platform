@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.upendra.portfolio.common.exception.BadRequestException;
 import com.upendra.portfolio.common.exception.ResourceNotFoundException;
+import com.upendra.portfolio.port.client.MediaClient;
 import com.upendra.portfolio.port.dto.request.CreateCertificationRequest;
 import com.upendra.portfolio.port.dto.request.UpdateCertificationRequest;
 import com.upendra.portfolio.port.dto.response.CertificationResponse;
@@ -24,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class CertificationServiceImpl implements CertificationService {
 
     private final CertificationRepository certificationRepository;
+    
+    private final MediaClient mediaClient;
 
     @Override
     public CertificationResponse createCertification(
@@ -144,7 +148,7 @@ public class CertificationServiceImpl implements CertificationService {
     private CertificationResponse mapToResponse(
             Certification certification) {
 
-        return CertificationResponse.builder()
+         return CertificationResponse.builder()
                 .id(certification.getId())
                 .name(certification.getName())
                 .issuingOrganization(certification.getIssuingOrganization())
@@ -152,9 +156,73 @@ public class CertificationServiceImpl implements CertificationService {
                 .expiryDate(certification.getExpiryDate())
                 .credentialId(certification.getCredentialId())
                 .credentialUrl(certification.getCredentialUrl())
+                .certificateUrl(certification.getCertificateUrl())
                 .displayOrder(certification.getDisplayOrder())
                 .createdAt(certification.getCreatedAt())
                 .updatedAt(certification.getUpdatedAt())
                 .build();
+    }
+
+    @Override
+    public CertificationResponse uploadCertificate(
+            UUID userUuid,
+            Long certificationId,
+            MultipartFile file) {
+
+        Certification certification = certificationRepository
+                .findByIdAndUserUuid(certificationId, userUuid)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Certification not found."));
+
+        // Delete old certificate if it exists
+        if (certification.getCertificatePublicId() != null
+                && !certification.getCertificatePublicId().isBlank()) {
+
+            mediaClient.deleteMedia(
+                    certification.getCertificatePublicId(),
+                    "raw");
+        }
+
+        // Upload new certificate
+        var response = mediaClient.uploadFile(
+                file,
+                "portfolio/certification");
+
+        var upload = response.getData();
+
+        certification.setCertificateUrl(upload.getSecureUrl());
+        certification.setCertificatePublicId(upload.getPublicId());
+
+        Certification saved = certificationRepository.save(certification);
+
+        return mapToResponse(saved);
+    }
+
+    @Override
+    public CertificationResponse deleteCertificate(
+            UUID userUuid,
+            Long certificationId) {
+
+        Certification certification = certificationRepository
+                .findByIdAndUserUuid(certificationId, userUuid)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Certification not found."));
+
+        if (certification.getCertificatePublicId() == null
+                || certification.getCertificatePublicId().isBlank()) {
+
+            throw new BadRequestException("No certificate uploaded.");
+        }
+
+        mediaClient.deleteMedia(
+                certification.getCertificatePublicId(),
+                "raw");
+
+        certification.setCertificateUrl(null);
+        certification.setCertificatePublicId(null);
+
+        Certification saved = certificationRepository.save(certification);
+
+        return mapToResponse(saved);
     }
 }

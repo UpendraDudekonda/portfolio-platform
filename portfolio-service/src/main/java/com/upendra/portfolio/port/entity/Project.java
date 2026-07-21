@@ -50,7 +50,11 @@ public class Project {
 
     private String liveUrl;
 
-    private String imageUrl;
+//    private String imageUrl;
+//
+//    private String imagePublicId;
+    
+    private Long projectId;
 
     @Builder.Default
     private Boolean featured = false;

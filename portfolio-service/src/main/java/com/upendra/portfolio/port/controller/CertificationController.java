@@ -3,6 +3,7 @@ package com.upendra.portfolio.port.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,7 +12,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.port.dto.request.CreateCertificationRequest;
@@ -83,6 +86,45 @@ public class CertificationController {
         return ApiResponse.<Void>builder()
                 .success(true)
                 .message("Certification deleted successfully.")
+                .build();
+    }
+    
+    
+    @PostMapping(
+    	    value = "/{certificationId}/upload",
+    	    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    	)
+    	public ApiResponse<CertificationResponse> uploadCertificate(
+
+    	        @RequestHeader("X-User-UUID") String userUuid,
+
+    	        @PathVariable Long certificationId,
+
+    	        @RequestParam("file") MultipartFile file) {
+
+    	    return ApiResponse.<CertificationResponse>builder()
+    	            .success(true)
+    	            .message("Certificate uploaded successfully.")
+    	            .data(certificationService.uploadCertificate(
+    	                    UUID.fromString(userUuid),
+    	                    certificationId,
+    	                    file))
+    	            .build();
+    	}
+    
+    @DeleteMapping("/{certificationId}/upload")
+    public ApiResponse<CertificationResponse> deleteCertificate(
+
+            @RequestHeader("X-User-UUID") String userUuid,
+
+            @PathVariable Long certificationId) {
+
+        return ApiResponse.<CertificationResponse>builder()
+                .success(true)
+                .message("Certificate removed successfully.")
+                .data(certificationService.deleteCertificate(
+                        UUID.fromString(userUuid),
+                        certificationId))
                 .build();
     }
 }

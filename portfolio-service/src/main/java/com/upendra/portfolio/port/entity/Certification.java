@@ -48,6 +48,12 @@ public class Certification {
     private String credentialId;
 
     private String credentialUrl;
+    
+    @Column
+    private String certificateUrl;
+
+    @Column
+    private String certificatePublicId;
 
     @Column(nullable = false)
     private Integer displayOrder;

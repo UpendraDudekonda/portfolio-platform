@@ -25,6 +25,8 @@ public class ProfileResponse {
     private String profileImageUrl;
 
     private String resumeUrl;
+    
+ 
 
     private LocalDateTime createdAt;
 

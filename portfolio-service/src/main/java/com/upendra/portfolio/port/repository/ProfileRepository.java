@@ -12,4 +12,6 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 	Optional<Profile> findByUserUuid(UUID userUuid);
 
 	boolean existsByUserUuid(UUID userUuid);
+	
+	Optional<Profile> findFirstByOrderByIdAsc();
 }

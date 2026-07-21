@@ -45,7 +45,13 @@ public class Profile {
 	private String profileImageUrl;
 
 	@Column
+	private String profileImagePublicId;
+
+	@Column
 	private String resumeUrl;
+
+	@Column
+	private String resumePublicId;
 
 	@Column
 	private LocalDateTime createdAt;

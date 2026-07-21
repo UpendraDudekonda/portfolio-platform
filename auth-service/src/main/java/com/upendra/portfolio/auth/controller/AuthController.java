@@ -19,10 +19,12 @@ import com.upendra.portfolio.auth.service.AuthService;
 import com.upendra.portfolio.auth.service.CookieService;
 import com.upendra.portfolio.common.dto.ApiResponse;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
-
+@Tag(name = "Authentication APIs", description = "User Authentication Endpoints")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -41,12 +43,42 @@ public class AuthController {
 		this.cookieService = cookieService;
 	}
 	
+	
+	@Operation(
+		    summary = "register User",
+		    description = "Allow user to register."
+		)
+		@io.swagger.v3.oas.annotations.responses.ApiResponses({
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		        responseCode = "200",
+		        description = "register successful"
+		    ),
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		        responseCode = "401",
+		        description = "sign up"
+		    )
+		})
 	@PostMapping("/register")
 	public ApiResponse<UserResponse> register(@Valid @RequestBody RegisterRequest request){
 		
 		return	authService.register(request);
 	}
 	
+	
+	@Operation(
+		    summary = "Login User",
+		    description = "Authenticates the user and returns JWT tokens."
+		)
+		@io.swagger.v3.oas.annotations.responses.ApiResponses({
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		        responseCode = "200",
+		        description = "Login successful"
+		    ),
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		        responseCode = "401",
+		        description = "Invalid credentials"
+		    )
+		})
 	@PostMapping("/login")
 	public ResponseEntity<ApiResponse<LoginResponse>> login(
 	        @Valid @RequestBody LoginRequest request) {
@@ -85,6 +117,21 @@ public class AuthController {
 	}
 	
 	
+	
+	@Operation(
+		    summary = "refresh token",
+		    description = "refresh token and  returns JWT access tokens."
+		)
+		@io.swagger.v3.oas.annotations.responses.ApiResponses({
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		        responseCode = "200",
+		        description = "return access token successful"
+		    ),
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		        responseCode = "401",
+		        description = "Invalid refresh token"
+		    )
+		})
 	@PostMapping("/refresh")
 	public ResponseEntity<ApiResponse<Void>> refreshToken(
 	        HttpServletRequest request) {
@@ -106,6 +153,21 @@ public class AuthController {
 	            );
 	}
 	
+	
+	@Operation(
+		    summary = "logout User",
+		    description = "logouts the user and returns empty JWT tokens."
+		)
+		@io.swagger.v3.oas.annotations.responses.ApiResponses({
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		        responseCode = "200",
+		        description = "logout successful"
+		    ),
+		    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+		        responseCode = "401",
+		        description = "not login"
+		    )
+		})
 	@PostMapping("/logout")
 	public  ResponseEntity<ApiResponse<Void>> logout() {
 

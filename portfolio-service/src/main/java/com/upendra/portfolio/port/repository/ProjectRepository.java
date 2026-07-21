@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.upendra.portfolio.port.entity.Project;
+import com.upendra.portfolio.port.entity.ProjectImage;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
@@ -16,4 +17,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     boolean existsByUserUuidAndTitle(UUID userUuid,
                                      String title);
+   
 }

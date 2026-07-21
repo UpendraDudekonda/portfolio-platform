@@ -29,6 +29,8 @@ public class CertificationResponse {
     private String credentialId;
 
     private String credentialUrl;
+    
+    private String certificateUrl;
 
     private Integer displayOrder;
 

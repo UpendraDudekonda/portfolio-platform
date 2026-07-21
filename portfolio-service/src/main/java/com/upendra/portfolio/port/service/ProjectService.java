@@ -3,8 +3,11 @@ package com.upendra.portfolio.port.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.upendra.portfolio.port.dto.request.CreateProjectRequest;
 import com.upendra.portfolio.port.dto.request.UpdateProjectRequest;
+import com.upendra.portfolio.port.dto.response.ProjectImageResponse;
 import com.upendra.portfolio.port.dto.response.ProjectResponse;
 
 public interface ProjectService {
@@ -24,4 +27,23 @@ public interface ProjectService {
     void deleteProject(
             UUID userUuid,
             Long projectId);
+    
+    
+    ProjectResponse uploadProjectImage(
+            UUID userUuid,
+            Long projectId,
+            MultipartFile file
+    );
+    
+
+    List<ProjectImageResponse> getProjectImages(
+            UUID userUuid,
+            Long projectId);
+
+    void deleteProjectImage(
+            UUID userUuid,
+            Long projectId,
+            Long imageId);
+    
+    
 }
