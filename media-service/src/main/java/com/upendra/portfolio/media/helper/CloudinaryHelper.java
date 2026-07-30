@@ -3,6 +3,7 @@ package com.upendra.portfolio.media.helper;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,45 +71,38 @@ public class CloudinaryHelper {
      * Example:
      * PDF Resume
      */
-    public Map uploadFile(
-            MultipartFile file,
-            String folder) {
-
+    public Map uploadFile(MultipartFile file, String folder) {
 
         try {
 
+        	String originalName = file.getOriginalFilename();
 
-            return cloudinary.uploader()
-                    .upload(
+        	String publicId = originalName.substring(
+        	        0,
+        	        originalName.lastIndexOf(".")
+        	);
 
-                            file.getBytes(),
+            Map result = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "portfolio/" + folder,
+                            "resource_type", "raw",
+                            "public_id", publicId
+                    )
+            );
 
-                            ObjectUtils.asMap(
+            result.put("originalFilename", originalName);
 
-                                    "folder",
-                                    "portfolio/" + folder,
-
-                                    "resource_type",
-                                    "raw"
-
-                            )
-
-                    );
-
+            return result;
 
         } catch (IOException e) {
-
 
             throw new RuntimeException(
                     "File upload failed",
                     e
             );
-
         }
-
-
     }
-
 
 
 

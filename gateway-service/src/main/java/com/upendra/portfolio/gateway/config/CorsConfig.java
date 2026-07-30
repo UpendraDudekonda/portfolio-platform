@@ -5,23 +5,22 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
-
-
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class CorsConfig {
 
-	@Bean
-    CorsConfiguration corsConfiguration() {
+    @Bean
+    public CorsWebFilter corsWebFilter() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://localhost:3000"
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173"
         ));
 
-        configuration.setAllowedMethods(List.of(
+        config.setAllowedMethods(List.of(
                 "GET",
                 "POST",
                 "PUT",
@@ -30,9 +29,14 @@ public class CorsConfig {
                 "OPTIONS"
         ));
 
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        config.addAllowedHeader("*");
+        config.setAllowCredentials(true);
 
-        return configuration;
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", config);
+
+        return new CorsWebFilter(source);
     }
 }
