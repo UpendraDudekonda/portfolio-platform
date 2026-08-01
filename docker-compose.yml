@@ -1,0 +1,162 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: portfolio-mysql
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth_db
+
+    command: --default-authentication-plugin=mysql_native_password
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+
+  eureka-service:
+    build:
+      context: ./eureka-service
+
+    container_name: eureka-service
+
+    ports:
+      - "8761:8761"
+
+
+  auth-service:
+    build:
+      context: ./auth-service
+
+    container_name: auth-service
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      EUREKA_SERVER_URL: http://eureka-service:8761/eureka
+
+      AUTH_DB_URL: jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+
+      AUTH_DB_USERNAME: root
+
+      AUTH_DB_PASSWORD: root
+
+      JWT_SECRET: ${JWT_SECRET}
+
+    depends_on:
+      - mysql
+      - eureka-service
+
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+
+    container_name: gateway-service
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      EUREKA_SERVER_URL: http://eureka-service:8761/eureka
+
+    depends_on:
+      - eureka-service
+      - auth-service
+
+  portfolio-service:
+    build:
+      context: ./portfolio-service
+
+    container_name: portfolio-service
+
+    ports:
+      - "8082:8082"
+
+    environment:
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+
+      PORTFOLIO_DB_URL: jdbc:mysql://mysql:3306/portfolio_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      PORTFOLIO_DB_USERNAME: ${PORTFOLIO_DB_USERNAME}
+      PORTFOLIO_DB_PASSWORD: ${PORTFOLIO_DB_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
+
+    depends_on:
+      - mysql
+      - eureka-service
+      - auth-service
+  media-service:
+    build:
+      context: ./media-service
+
+    container_name: media-service
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+
+    depends_on:
+      - eureka-service
+      - portfolio-service
+  contact-service:
+    build:
+      context: ./contact-service
+
+    container_name: contact-service
+
+    ports:
+      - "8084:8084"
+
+    environment:
+      CONTACT_SERVER_PORT: ${CONTACT_SERVER_PORT}
+
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+
+      CONTACT_DB_URL: jdbc:mysql://mysql:3306/contact_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      CONTACT_DB_USERNAME: ${CONTACT_DB_USERNAME}
+      CONTACT_DB_PASSWORD: ${CONTACT_DB_PASSWORD}
+
+      PORTFOLIO_OWNER_EMAIL: ${PORTFOLIO_OWNER_EMAIL}
+
+    depends_on:
+      - mysql
+      - eureka-service
+  email-service:
+    build:
+      context: ./email-service
+
+    container_name: email-service
+
+    ports:
+      - "8085:8085"
+
+    environment:
+      EMAIL_SERVER_PORT: ${EMAIL_SERVER_PORT}
+
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+    depends_on:
+      - eureka-service
+
+
+
+volumes:
+
+  mysql-data:

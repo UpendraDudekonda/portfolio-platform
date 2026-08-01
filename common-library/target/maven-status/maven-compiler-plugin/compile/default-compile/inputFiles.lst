@@ -1,9 +1,13 @@
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\constants\AppConstants.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\dto\ApiResponse.java
+D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\dto\email\EmailRequest.java
+D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\dto\email\EmailResponse.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\dto\ErrorResponse.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\dto\PageResponse.java
+D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\BadRequestException.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\BusinessException.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\DuplicateResourceException.java
+D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\handler\GlobalExceptionHandler.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\ResourceNotFoundException.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\exception\UnauthorizedException.java
 D:\portfolio\portfolio-platform\common-library\src\main\java\com\upendra\portfolio\common\util\ValidationUtil.java
