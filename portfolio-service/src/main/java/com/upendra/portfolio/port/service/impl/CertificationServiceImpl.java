@@ -9,7 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.upendra.portfolio.common.exception.BadRequestException;
 import com.upendra.portfolio.common.exception.ResourceNotFoundException;
-import com.upendra.portfolio.port.client.MediaClient;
+import com.upendra.portfolio.media.service.MediaService;
+
 import com.upendra.portfolio.port.dto.request.CreateCertificationRequest;
 import com.upendra.portfolio.port.dto.request.UpdateCertificationRequest;
 import com.upendra.portfolio.port.dto.response.CertificationResponse;
@@ -27,7 +28,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     private final CertificationRepository certificationRepository;
     
-    private final MediaClient mediaClient;
+    private final MediaService mediaService;
 
     @Override
     public CertificationResponse createCertification(
@@ -178,17 +179,17 @@ public class CertificationServiceImpl implements CertificationService {
         if (certification.getCertificatePublicId() != null
                 && !certification.getCertificatePublicId().isBlank()) {
 
-            mediaClient.deleteMedia(
+        	mediaService.deleteMedia(
                     certification.getCertificatePublicId(),
                     "raw");
         }
 
         // Upload new certificate
-        var response = mediaClient.uploadFile(
+        var upload = mediaService.uploadFile(
                 file,
                 "portfolio/certification");
 
-        var upload = response.getData();
+        
 
         certification.setCertificateUrl(upload.getSecureUrl());
         certification.setCertificatePublicId(upload.getPublicId());
@@ -214,7 +215,7 @@ public class CertificationServiceImpl implements CertificationService {
             throw new BadRequestException("No certificate uploaded.");
         }
 
-        mediaClient.deleteMedia(
+        mediaService.deleteMedia(
                 certification.getCertificatePublicId(),
                 "raw");
 

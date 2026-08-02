@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.upendra.portfolio.auth.security.SecurityUtils;
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.port.dto.request.CreateSocialLinkRequest;
 import com.upendra.portfolio.port.dto.request.UpdateSocialLinkRequest;
@@ -31,41 +32,47 @@ public class SocialLinkController {
 
     @PostMapping
     public ApiResponse<SocialLinkResponse> createSocialLink(
-            @RequestHeader("X-User-UUID") String userUuid,
+            
             @Valid @RequestBody CreateSocialLinkRequest request) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         return ApiResponse.<SocialLinkResponse>builder()
                 .success(true)
                 .message("Social link created successfully.")
                 .data(socialLinkService.createSocialLink(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         request))
                 .build();
     }
 
     @GetMapping
     public ApiResponse<List<SocialLinkResponse>> getMySocialLinks(
-            @RequestHeader("X-User-UUID") String userUuid) {
+            ) {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
 
         return ApiResponse.<List<SocialLinkResponse>>builder()
                 .success(true)
                 .message("Social links fetched successfully.")
                 .data(socialLinkService.getMySocialLinks(
-                        UUID.fromString(userUuid)))
+                		userUuid))
                 .build();
     }
 
     @PutMapping("/{socialLinkId}")
     public ApiResponse<SocialLinkResponse> updateSocialLink(
-            @RequestHeader("X-User-UUID") String userUuid,
+           
             @PathVariable Long socialLinkId,
             @Valid @RequestBody UpdateSocialLinkRequest request) {
-
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         return ApiResponse.<SocialLinkResponse>builder()
                 .success(true)
                 .message("Social link updated successfully.")
                 .data(socialLinkService.updateSocialLink(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         socialLinkId,
                         request))
                 .build();
@@ -73,11 +80,13 @@ public class SocialLinkController {
 
     @DeleteMapping("/{socialLinkId}")
     public ApiResponse<Void> deleteSocialLink(
-            @RequestHeader("X-User-UUID") String userUuid,
+           
             @PathVariable Long socialLinkId) {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
 
         socialLinkService.deleteSocialLink(
-                UUID.fromString(userUuid),
+        		userUuid,
                 socialLinkId);
 
         return ApiResponse.<Void>builder()

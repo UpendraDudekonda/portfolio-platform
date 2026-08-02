@@ -3,9 +3,8 @@ package com.upendra.portfolio.port.service.impl;
 
 import org.springframework.stereotype.Service;
 
-import com.upendra.portfolio.port.client.ContactClient;
+import com.upendra.portfolio.contact.repository.ContactRepository;
 import com.upendra.portfolio.port.dto.response.AdminDashboardResponse;
-import com.upendra.portfolio.port.dto.response.ContactStatsResponse;
 import com.upendra.portfolio.port.repository.CertificationRepository;
 import com.upendra.portfolio.port.repository.EducationRepository;
 import com.upendra.portfolio.port.repository.ExperienceRepository;
@@ -39,17 +38,19 @@ public class AdminDashboardServiceImpl
 
     private final SocialLinkRepository socialLinkRepository;
     
-    private final ContactClient contactClient;
+    private final ContactRepository contactRepository;
 
 
 
     @Override
     public AdminDashboardResponse getDashboard() {
 
+    	 long totalMessages =
+    	            contactRepository.count();
 
-        ContactStatsResponse contactStats =
-                contactClient.getContactStats();
 
+    	    long unreadMessages =
+    	            contactRepository.countByReadStatusFalse();
 
         return AdminDashboardResponse.builder()
 
@@ -67,13 +68,9 @@ public class AdminDashboardServiceImpl
 
                 .socialLinks(socialLinkRepository.count())
 
-                .messages(
-                    contactStats.getTotalMessages()
-                )
+                .messages(totalMessages)
 
-                .unreadMessages(
-                    contactStats.getUnreadMessages()
-                )
+                .unreadMessages(unreadMessages)
 
                 .build();
     }

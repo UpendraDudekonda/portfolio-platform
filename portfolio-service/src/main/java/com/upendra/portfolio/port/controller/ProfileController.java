@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.upendra.portfolio.auth.security.SecurityUtils;
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.port.dto.request.CreateProfileRequest;
 import com.upendra.portfolio.port.dto.request.UpdateProfileRequest;
@@ -37,10 +38,11 @@ public class ProfileController {
 	}
 	
 	@PostMapping
-	public  ApiResponse<ProfileResponse > createProfile( @RequestHeader("X-User-UUID") String userUuid,
+	public  ApiResponse<ProfileResponse > createProfile( 
 			 												@Valid @RequestBody CreateProfileRequest request){
 		
-		ProfileResponse profileResponse = profileService.createProfile(UUID.fromString(userUuid), request);
+		UUID userUuid = SecurityUtils.getCurrentUserUuid();
+		ProfileResponse profileResponse = profileService.createProfile(userUuid, request);
 		
 		return ApiResponse.<ProfileResponse>builder()
 				.success(true)
@@ -50,9 +52,10 @@ public class ProfileController {
 	}
 	
 	@GetMapping("/me")
-	public ApiResponse<ProfileResponse> getProfile(@RequestHeader("X-User-UUID") String userUuid){
+	public ApiResponse<ProfileResponse> getProfile(){
 		
-		ProfileResponse profileResponse = profileService.getMyProfile(UUID.fromString(userUuid));
+		UUID userUuid = SecurityUtils.getCurrentUserUuid();
+		ProfileResponse profileResponse = profileService.getMyProfile(userUuid);
 		
 		return ApiResponse.<ProfileResponse>builder()
 				.success(true)
@@ -62,10 +65,10 @@ public class ProfileController {
 	}
 	
 	@PutMapping
-	public  ApiResponse<ProfileResponse > updateProfile( @RequestHeader("X-User-UUID") String userUuid,
+	public  ApiResponse<ProfileResponse > updateProfile( 
 															@Valid @RequestBody UpdateProfileRequest request){
-		
-		ProfileResponse profileResponse = profileService.updateProfile(UUID.fromString(userUuid), request);
+		UUID userUuid = SecurityUtils.getCurrentUserUuid();
+		ProfileResponse profileResponse = profileService.updateProfile(userUuid, request);
 		
 		return ApiResponse.<ProfileResponse>builder()
 				.success(true)
@@ -76,9 +79,10 @@ public class ProfileController {
 	
 	@DeleteMapping
 	public ApiResponse<Void> deleteProfile(
-	        @RequestHeader("X-User-UUID") String userUuid) {
+	        ) {
 
-	    profileService.deleteProfile(UUID.fromString(userUuid));
+		UUID userUuid = SecurityUtils.getCurrentUserUuid();
+	    profileService.deleteProfile(userUuid);
 
 	    return ApiResponse.<Void>builder()
 	            .success(true)
@@ -91,12 +95,13 @@ public class ProfileController {
 	        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
 	)
 	public ApiResponse<ProfileResponse> uploadProfileImage(
-	        @RequestHeader("X-User-UUID") String userUuid,
+	       
 	        @RequestPart MultipartFile file
 	) {
-
+		
+		UUID userUuid = SecurityUtils.getCurrentUserUuid();
 	    ProfileResponse res = profileService.uploadProfileImage(
-	            UUID.fromString(userUuid),
+	    		userUuid,
 	            file
 	    );
 
@@ -114,18 +119,19 @@ public class ProfileController {
 	)
 	public ApiResponse<ProfileResponse> uploadResume(
 
-	        @RequestHeader("X-User-UUID")
-	        String userUuid,
+	       
+	        
 
 	        @RequestPart("file")
 	        MultipartFile file) {
-
+		
+		UUID userUuid = SecurityUtils.getCurrentUserUuid();
 	    return ApiResponse.<ProfileResponse>builder()
 	            .success(true)
 	            .message("Resume uploaded successfully.")
 	            .data(
 	                    profileService.uploadResume(
-	                            UUID.fromString(userUuid),
+	                    		userUuid,
 	                            file
 	                    )
 	            )

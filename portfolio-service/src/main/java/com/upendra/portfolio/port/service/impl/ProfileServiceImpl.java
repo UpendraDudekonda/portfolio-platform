@@ -9,8 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.common.exception.DuplicateResourceException;
 import com.upendra.portfolio.common.exception.ResourceNotFoundException;
-import com.upendra.portfolio.port.client.MediaClient;
-import com.upendra.portfolio.port.dto.media.UploadResponse;
+import com.upendra.portfolio.media.dto.response.UploadResponse;
+import com.upendra.portfolio.media.service.MediaService;
+
+
 import com.upendra.portfolio.port.dto.request.CreateProfileRequest;
 import com.upendra.portfolio.port.dto.request.UpdateProfileRequest;
 import com.upendra.portfolio.port.dto.response.ProfileResponse;
@@ -26,7 +28,7 @@ public class ProfileServiceImpl implements ProfileService{
 
 	private final ProfileRepository profileRepository;
 	
-	private final MediaClient mediaClient;
+	private final MediaService mediaService;
 	
 	
 	
@@ -155,7 +157,7 @@ public class ProfileServiceImpl implements ProfileService{
 			        	new ResourceNotFoundException("Profile not found.") );
 		
 		if (profile.getProfileImagePublicId() != null) {
-		    mediaClient.deleteMedia(
+			mediaService.deleteMedia(
 		        profile.getProfileImagePublicId(),
 		        "image"
 		    );
@@ -163,20 +165,19 @@ public class ProfileServiceImpl implements ProfileService{
 		
 		
 		//give media-service to upload and get uls and publicId
-		ApiResponse<UploadResponse> response =
-		        mediaClient.uploadImage(file, "profile");
-		
-		
-		UploadResponse upload = response.getData();
-		
-		//map to profile to save in db
+		UploadResponse upload =
+		        mediaService.uploadImage(file, "profile");
+
+
+		// map to profile to save in DB
 		profile.setProfileImageUrl(upload.getSecureUrl());
 
 		profile.setProfileImagePublicId(upload.getPublicId());
 
 		profile.setUpdatedAt(LocalDateTime.now());
-		
-		//save in DB
+
+
+		// save in DB
 		profileRepository.save(profile);
 		
 		return mapToResponse(profile);
@@ -194,22 +195,22 @@ public class ProfileServiceImpl implements ProfileService{
 	    // Delete old resume if present
 	    if (profile.getResumePublicId() != null) {
 
-	        mediaClient.deleteMedia(
+	    	mediaService.deleteMedia(
 	                profile.getResumePublicId(),
 	                "raw"
 	        );
 	    }
 
-	    ApiResponse<UploadResponse> response =
-	            mediaClient.uploadFile(
+	    UploadResponse response =
+	    		mediaService.uploadFile(
 	                    file,
 	                    "resume"
 	            );
 
-	    UploadResponse upload = response.getData();
+	   // UploadResponse upload = response.getData();
 
-	    profile.setResumeUrl(upload.getSecureUrl());
-	    profile.setResumePublicId(upload.getPublicId());
+	    profile.setResumeUrl(response.getSecureUrl());
+	    profile.setResumePublicId(response.getPublicId());
 	    profile.setUpdatedAt(LocalDateTime.now());
 
 	    Profile saved = profileRepository.save(profile);

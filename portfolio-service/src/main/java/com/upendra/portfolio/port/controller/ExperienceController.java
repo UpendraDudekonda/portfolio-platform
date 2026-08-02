@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.upendra.portfolio.auth.security.SecurityUtils;
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.port.dto.request.CreateExperienceRequest;
 import com.upendra.portfolio.port.dto.request.UpdateExperienceRequest;
@@ -31,41 +32,47 @@ public class ExperienceController {
 
     @PostMapping
     public ApiResponse<ExperienceResponse> createExperience(
-            @RequestHeader("X-User-UUID") String userUuid,
+            
             @Valid @RequestBody CreateExperienceRequest request) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         return ApiResponse.<ExperienceResponse>builder()
                 .success(true)
                 .message("Experience created successfully.")
                 .data(experienceService.createExperience(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         request))
                 .build();
     }
 
     @GetMapping
     public ApiResponse<List<ExperienceResponse>> getMyExperiences(
-            @RequestHeader("X-User-UUID") String userUuid) {
+            ) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         return ApiResponse.<List<ExperienceResponse>>builder()
                 .success(true)
                 .message("Experiences fetched successfully.")
                 .data(experienceService.getMyExperiences(
-                        UUID.fromString(userUuid)))
+                		userUuid))
                 .build();
     }
 
     @PutMapping("/{experienceId}")
     public ApiResponse<ExperienceResponse> updateExperience(
-            @RequestHeader("X-User-UUID") String userUuid,
+           
             @PathVariable Long experienceId,
             @Valid @RequestBody UpdateExperienceRequest request) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         return ApiResponse.<ExperienceResponse>builder()
                 .success(true)
                 .message("Experience updated successfully.")
                 .data(experienceService.updateExperience(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         experienceId,
                         request))
                 .build();
@@ -73,11 +80,12 @@ public class ExperienceController {
 
     @DeleteMapping("/{experienceId}")
     public ApiResponse<Void> deleteExperience(
-            @RequestHeader("X-User-UUID") String userUuid,
+            
             @PathVariable Long experienceId) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
         experienceService.deleteExperience(
-                UUID.fromString(userUuid),
+        		userUuid,
                 experienceId);
 
         return ApiResponse.<Void>builder()

@@ -9,8 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.common.exception.BadRequestException;
 import com.upendra.portfolio.common.exception.ResourceNotFoundException;
-import com.upendra.portfolio.port.client.MediaClient;
-import com.upendra.portfolio.port.dto.media.UploadResponse;
+import com.upendra.portfolio.media.service.MediaService;
+
+import com.upendra.portfolio.media.dto.response.UploadResponse;
 import com.upendra.portfolio.port.dto.request.CreateProjectRequest;
 import com.upendra.portfolio.port.dto.request.UpdateProjectRequest;
 import com.upendra.portfolio.port.dto.response.ProjectImageResponse;
@@ -30,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final MediaClient mediaClient;
+    private final MediaService mediaService;
     
     private final ProjectImageRepository projectImageRepository;
 
@@ -124,7 +125,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         for (ProjectImage image : images) {
 
-            mediaClient.deleteMedia(
+        	mediaService.deleteMedia(
                     image.getImagePublicId(),
                     "image");
         }
@@ -165,19 +166,18 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponse uploadProjectImage(UUID userUuid,
-                                              Long projectId,
-                                              MultipartFile file) {
+    public ProjectResponse uploadProjectImage(
+            UUID userUuid,
+            Long projectId,
+            MultipartFile file) {
 
         Project project = projectRepository
                 .findByIdAndUserUuid(projectId, userUuid)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Project not found."));
 
-        ApiResponse<UploadResponse> response =
-                mediaClient.uploadImage(file, "project");
-
-        UploadResponse upload = response.getData();
+        UploadResponse upload =
+                mediaService.uploadImage(file, "project");
 
         long count = projectImageRepository.countByProjectId(projectId);
 
@@ -227,7 +227,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Project image not found."));
 
-        mediaClient.deleteMedia(
+        mediaService.deleteMedia(
                 image.getImagePublicId(),
                 "image");
 

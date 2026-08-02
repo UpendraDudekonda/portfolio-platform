@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.upendra.portfolio.auth.security.SecurityUtils;
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.port.dto.request.CreateCertificationRequest;
 import com.upendra.portfolio.port.dto.request.UpdateCertificationRequest;
@@ -34,41 +35,45 @@ public class CertificationController {
 
     @PostMapping
     public ApiResponse<CertificationResponse> createCertification(
-            @RequestHeader("X-User-UUID") String userUuid,
+           
             @Valid @RequestBody CreateCertificationRequest request) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
         return ApiResponse.<CertificationResponse>builder()
                 .success(true)
                 .message("Certification created successfully.")
                 .data(certificationService.createCertification(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         request))
                 .build();
     }
 
     @GetMapping
     public ApiResponse<List<CertificationResponse>> getMyCertifications(
-            @RequestHeader("X-User-UUID") String userUuid) {
+            ) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
         return ApiResponse.<List<CertificationResponse>>builder()
                 .success(true)
                 .message("Certifications fetched successfully.")
                 .data(certificationService.getMyCertifications(
-                        UUID.fromString(userUuid)))
+                		userUuid))
                 .build();
     }
 
     @PutMapping("/{certificationId}")
     public ApiResponse<CertificationResponse> updateCertification(
-            @RequestHeader("X-User-UUID") String userUuid,
+            
             @PathVariable Long certificationId,
             @Valid @RequestBody UpdateCertificationRequest request) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         return ApiResponse.<CertificationResponse>builder()
                 .success(true)
                 .message("Certification updated successfully.")
                 .data(certificationService.updateCertification(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         certificationId,
                         request))
                 .build();
@@ -76,11 +81,13 @@ public class CertificationController {
 
     @DeleteMapping("/{certificationId}")
     public ApiResponse<Void> deleteCertification(
-            @RequestHeader("X-User-UUID") String userUuid,
+            
             @PathVariable Long certificationId) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         certificationService.deleteCertification(
-                UUID.fromString(userUuid),
+        		userUuid,
                 certificationId);
 
         return ApiResponse.<Void>builder()
@@ -96,17 +103,19 @@ public class CertificationController {
     	)
     	public ApiResponse<CertificationResponse> uploadCertificate(
 
-    	        @RequestHeader("X-User-UUID") String userUuid,
+    	      
 
     	        @PathVariable Long certificationId,
 
     	        @RequestParam("file") MultipartFile file) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
     	    return ApiResponse.<CertificationResponse>builder()
     	            .success(true)
     	            .message("Certificate uploaded successfully.")
     	            .data(certificationService.uploadCertificate(
-    	                    UUID.fromString(userUuid),
+    	            		userUuid,
     	                    certificationId,
     	                    file))
     	            .build();
@@ -115,15 +124,17 @@ public class CertificationController {
     @DeleteMapping("/{certificationId}/upload")
     public ApiResponse<CertificationResponse> deleteCertificate(
 
-            @RequestHeader("X-User-UUID") String userUuid,
+            
 
             @PathVariable Long certificationId) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         return ApiResponse.<CertificationResponse>builder()
                 .success(true)
                 .message("Certificate removed successfully.")
                 .data(certificationService.deleteCertificate(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         certificationId))
                 .build();
     }

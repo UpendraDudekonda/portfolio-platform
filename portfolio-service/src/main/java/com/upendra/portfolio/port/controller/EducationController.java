@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.upendra.portfolio.auth.security.SecurityUtils;
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.port.dto.request.CreateEducationRequest;
 import com.upendra.portfolio.port.dto.request.UpdateEducationRequest;
@@ -31,41 +32,44 @@ public class EducationController {
 
     @PostMapping
     public ApiResponse<EducationResponse> createEducation(
-            @RequestHeader("X-User-UUID") String userUuid,
+            
             @Valid @RequestBody CreateEducationRequest request) {
-
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
         return ApiResponse.<EducationResponse>builder()
                 .success(true)
                 .message("Education created successfully.")
                 .data(educationService.createEducation(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         request))
                 .build();
     }
 
     @GetMapping
     public ApiResponse<List<EducationResponse>> getMyEducations(
-            @RequestHeader("X-User-UUID") String userUuid) {
-
+            ) {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
         return ApiResponse.<List<EducationResponse>>builder()
                 .success(true)
                 .message("Educations fetched successfully.")
                 .data(educationService.getEducations(
-                        UUID.fromString(userUuid)))
+                		userUuid))
                 .build();
     }
 
     @PutMapping("/{educationId}")
     public ApiResponse<EducationResponse> updateEducation(
-            @RequestHeader("X-User-UUID") String userUuid,
+          
             @PathVariable Long educationId,
             @Valid @RequestBody UpdateEducationRequest request) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
         return ApiResponse.<EducationResponse>builder()
                 .success(true)
                 .message("Education updated successfully.")
                 .data(educationService.updateEducation(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         educationId,
                         request))
                 .build();
@@ -73,11 +77,12 @@ public class EducationController {
 
     @DeleteMapping("/{educationId}")
     public ApiResponse<Void> deleteEducation(
-            @RequestHeader("X-User-UUID") String userUuid,
+           
             @PathVariable Long educationId) {
 
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
         educationService.deleteEducation(
-                UUID.fromString(userUuid),
+        		userUuid,
                 educationId);
 
         return ApiResponse.<Void>builder()

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.upendra.portfolio.auth.security.SecurityUtils;
 import com.upendra.portfolio.common.dto.ApiResponse;
 import com.upendra.portfolio.port.dto.request.CreateProjectRequest;
 import com.upendra.portfolio.port.dto.request.UpdateProjectRequest;
@@ -35,41 +36,46 @@ public class ProjectController {
 
     @PostMapping
     public ApiResponse<ProjectResponse> createProject(
-            @RequestHeader("X-User-UUID") String userUuid,
+           
             @Valid @RequestBody CreateProjectRequest request) {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
 
         return ApiResponse.<ProjectResponse>builder()
                 .success(true)
                 .message("Project created successfully.")
                 .data(projectService.createProject(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         request))
                 .build();
     }
 
     @GetMapping
-    public ApiResponse<List<ProjectResponse>> getProjects(
-            @RequestHeader("X-User-UUID") String userUuid) {
+    public ApiResponse<List<ProjectResponse>> getProjects() {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
 
         return ApiResponse.<List<ProjectResponse>>builder()
                 .success(true)
                 .message("Projects fetched successfully.")
                 .data(projectService.getMyProjects(
-                        UUID.fromString(userUuid)))
+                		userUuid))
                 .build();
     }
 
     @PutMapping("/{projectId}")
     public ApiResponse<ProjectResponse> updateProject(
-            @RequestHeader("X-User-UUID") String userUuid,
+          
             @PathVariable Long projectId,
             @Valid @RequestBody UpdateProjectRequest request) {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
 
         return ApiResponse.<ProjectResponse>builder()
                 .success(true)
                 .message("Project updated successfully.")
                 .data(projectService.updateProject(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         projectId,
                         request))
                 .build();
@@ -77,11 +83,13 @@ public class ProjectController {
 
     @DeleteMapping("/{projectId}")
     public ApiResponse<Void> deleteProject(
-            @RequestHeader("X-User-UUID") String userUuid,
+          
             @PathVariable Long projectId) {
-
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
+    	
         projectService.deleteProject(
-                UUID.fromString(userUuid),
+        		userUuid,
                 projectId);
 
         return ApiResponse.<Void>builder()
@@ -96,15 +104,17 @@ public class ProjectController {
     	    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     	)
     	public ApiResponse<ProjectResponse> uploadProjectImage(
-    	        @RequestHeader("X-User-UUID") String userUuid,
+    	       
     	        @PathVariable Long projectId,
     	        @RequestPart("file") MultipartFile file) {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
 
     	    return ApiResponse.<ProjectResponse>builder()
     	            .success(true)
     	            .message("Project image uploaded successfully.")
     	            .data(projectService.uploadProjectImage(
-    	                    UUID.fromString(userUuid),
+    	            		userUuid,
     	                    projectId,
     	                    file))
     	            .build();
@@ -112,26 +122,30 @@ public class ProjectController {
     
     @GetMapping("/{projectId}/images")
     public ApiResponse<List<ProjectImageResponse>> getProjectImages(
-            @RequestHeader("X-User-UUID") String userUuid,
+           
             @PathVariable Long projectId) {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
 
         return ApiResponse.<List<ProjectImageResponse>>builder()
                 .success(true)
                 .message("Project images fetched successfully.")
                 .data(projectService.getProjectImages(
-                        UUID.fromString(userUuid),
+                		userUuid,
                         projectId))
                 .build();
     }
     
     @DeleteMapping("/{projectId}/images/{imageId}")
     public ApiResponse<Void> deleteProjectImage(
-            @RequestHeader("X-User-UUID") String userUuid,
+            
             @PathVariable Long projectId,
             @PathVariable Long imageId) {
+    	
+    	UUID userUuid = SecurityUtils.getCurrentUserUuid();
 
         projectService.deleteProjectImage(
-                UUID.fromString(userUuid),
+        		userUuid,
                 projectId,
                 imageId);
 
