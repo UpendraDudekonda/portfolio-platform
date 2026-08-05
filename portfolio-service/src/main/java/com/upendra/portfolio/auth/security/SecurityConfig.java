@@ -1,9 +1,9 @@
+
 package com.upendra.portfolio.auth.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,22 +17,21 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
 
-            // Use CorsFilter bean
+            // CORS
             .cors(cors -> {})
 
+            // JWT based authentication - CSRF disabled
             .csrf(csrf -> csrf.disable())
 
-
+            // Stateless authentication
             .sessionManagement(session ->
                     session.sessionCreationPolicy(
                             SessionCreationPolicy.STATELESS))
-
 
             .authorizeHttpRequests(auth -> auth
 
@@ -42,7 +41,6 @@ public class SecurityConfig {
                             "/**"
                     )
                     .permitAll()
-
 
                     // Public APIs
                     .requestMatchers(
@@ -54,22 +52,18 @@ public class SecurityConfig {
                     )
                     .permitAll()
 
-
-                    // Remaining APIs require JWT
+                    // Everything else requires JWT
                     .anyRequest()
                     .authenticated()
             )
 
-
+            // JWT authentication
             .addFilterBefore(
                     jwtAuthenticationFilter,
                     UsernamePasswordAuthenticationFilter.class
-            )
-
-
-            .httpBasic(Customizer.withDefaults());
-
+            );
 
         return http.build();
     }
 }
+

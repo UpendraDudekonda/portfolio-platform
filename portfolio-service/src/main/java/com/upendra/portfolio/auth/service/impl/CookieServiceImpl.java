@@ -1,3 +1,4 @@
+
 package com.upendra.portfolio.auth.service.impl;
 
 import org.springframework.http.ResponseCookie;
@@ -13,87 +14,86 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CookieServiceImpl implements CookieService {
-	
-	private final JwtProperties jwtProperties;
-	
-	private static final String ACCESS_TOKEN = "access_token";
-	private static final String REFRESH_TOKEN = "refresh_token";
 
-	@Override
-	public ResponseCookie createAccessTokenCookie(String token) {
-		
-		 return ResponseCookie.from(ACCESS_TOKEN, token)
-		            .httpOnly(true)
-		            .secure(false)
-		            .path("/")
-		            .maxAge(jwtProperties.getAccessTokenExpiration() / 1000)
-		            .sameSite("Strict")
-		            .build();
-	}
+    private final JwtProperties jwtProperties;
 
-	@Override
-	public ResponseCookie createRefreshTokenCookie(String token) {
-		
-		 return ResponseCookie.from(REFRESH_TOKEN, token)
-		            .httpOnly(true)
-		            .secure(false)
-		            .path("/")
-		            .maxAge(jwtProperties.getRefreshTokenExpiration() / 1000)
-		            .sameSite("Strict")
-		            .build();
-	}
-	
-	@Override
-	public String getAccessToken(HttpServletRequest request) {
-	    return getCookieValue(request, ACCESS_TOKEN);
-	}
+    private static final String ACCESS_TOKEN = "access_token";
+    private static final String REFRESH_TOKEN = "refresh_token";
 
-	@Override
-	public String getRefreshToken(HttpServletRequest request) {
-	    return getCookieValue(request, REFRESH_TOKEN);
-	}
-	
-	
-	//Helper method
-	private String getCookieValue(HttpServletRequest request, String cookieName) {
+    @Override
+    public ResponseCookie createAccessTokenCookie(String token) {
 
-	    if (request.getCookies() == null) {
-	        return null;
-	    }
+        return ResponseCookie.from(ACCESS_TOKEN, token)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(jwtProperties.getAccessTokenExpiration() / 1000)
+                .sameSite("None")
+                .build();
+    }
 
-	    for (Cookie cookie : request.getCookies()) {
-	        if (cookieName.equals(cookie.getName())) {
-	            return cookie.getValue();
-	        }
-	    }
+    @Override
+    public ResponseCookie createRefreshTokenCookie(String token) {
 
-	    return null;
-	}
-	
-	
+        return ResponseCookie.from(REFRESH_TOKEN, token)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(jwtProperties.getRefreshTokenExpiration() / 1000)
+                .sameSite("None")
+                .build();
+    }
 
-	@Override
-	public ResponseCookie clearAccessTokenCookie() {
-		
-		return ResponseCookie.from(ACCESS_TOKEN, "")
-	            .httpOnly(true)
-	            .secure(false)
-	            .path("/")
-	            .maxAge(0)
-	            .sameSite("Strict")
-	            .build();
-	}
+    @Override
+    public String getAccessToken(HttpServletRequest request) {
+        return getCookieValue(request, ACCESS_TOKEN);
+    }
 
-	@Override
-	public ResponseCookie clearRefreshTokenCookie() {
-		
-		 return ResponseCookie.from(REFRESH_TOKEN, "")
-		            .httpOnly(true)
-		            .secure(false)
-		            .path("/")
-		            .maxAge(0)
-		            .sameSite("Strict")
-		            .build();
-	}
+    @Override
+    public String getRefreshToken(HttpServletRequest request) {
+        return getCookieValue(request, REFRESH_TOKEN);
+    }
 
+    private String getCookieValue(
+            HttpServletRequest request,
+            String cookieName) {
+
+        if (request.getCookies() == null) {
+            return null;
+        }
+
+        for (Cookie cookie : request.getCookies()) {
+
+            if (cookieName.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public ResponseCookie clearAccessTokenCookie() {
+
+        return ResponseCookie.from(ACCESS_TOKEN, "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+    }
+
+    @Override
+    public ResponseCookie clearRefreshTokenCookie() {
+
+        return ResponseCookie.from(REFRESH_TOKEN, "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+    }
 }
+
