@@ -1,5 +1,8 @@
 services:
 
+  # ============================================================
+  # MySQL
+  # ============================================================
   mysql:
     image: mysql:8.0
 
@@ -31,10 +34,17 @@ services:
       retries: 10
 
 
+  # ============================================================
+  # Portfolio Service
+  # ============================================================
   portfolio-service:
 
     build:
-      context: ./portfolio-service
+      # IMPORTANT:
+      # Root project directory is the build context
+      # so Docker can access common-library
+      context: .
+      dockerfile: ./portfolio-service/Dockerfile
 
     container_name: portfolio-service
 
@@ -44,32 +54,54 @@ services:
 
     environment:
 
+      # --------------------------------------------------------
+      # Server
+      # --------------------------------------------------------
+      PORTFOLIO_SERVER_PORT: ${PORTFOLIO_SERVER_PORT}
+
+
+      # --------------------------------------------------------
+      # Eureka
+      # --------------------------------------------------------
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+
+
+      # --------------------------------------------------------
       # Database
+      # --------------------------------------------------------
       PORTFOLIO_DB_URL: ${PORTFOLIO_DB_URL}
       PORTFOLIO_DB_USERNAME: ${PORTFOLIO_DB_USERNAME}
       PORTFOLIO_DB_PASSWORD: ${PORTFOLIO_DB_PASSWORD}
 
 
+      # --------------------------------------------------------
       # JWT
+      # --------------------------------------------------------
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
       JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
 
 
+      # --------------------------------------------------------
       # Cloudinary
+      # --------------------------------------------------------
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
 
 
+      # --------------------------------------------------------
       # Mail
+      # --------------------------------------------------------
       MAIL_HOST: ${MAIL_HOST}
       MAIL_PORT: ${MAIL_PORT}
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
 
 
-      # Owner email
+      # --------------------------------------------------------
+      # Portfolio Owner
+      # --------------------------------------------------------
       PORTFOLIO_OWNER_EMAIL: ${PORTFOLIO_OWNER_EMAIL}
 
 
@@ -78,6 +110,9 @@ services:
         condition: service_healthy
 
 
+# ==============================================================
+# Volumes
+# ==============================================================
 volumes:
 
   mysql-data:
